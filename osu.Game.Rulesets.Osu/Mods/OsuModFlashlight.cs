@@ -13,6 +13,8 @@ using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Osu.Objects.Drawables;
+using osu.Game.Rulesets.Osu.UI;
+using osu.Game.Rulesets.UI;
 using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Mods
@@ -25,7 +27,7 @@ namespace osu.Game.Rulesets.Osu.Mods
         private const double default_follow_delay = 120;
 
         [SettingSource("Follow delay", "Milliseconds until the flashlight reaches the cursor")]
-        public BindableNumber<double> FollowDelay { get; } = new BindableDouble(default_follow_delay)
+        public BindableDouble FollowDelay { get; } = new BindableDouble(default_follow_delay)
         {
             MinValue = default_follow_delay,
             MaxValue = default_follow_delay * 10,
@@ -49,11 +51,22 @@ namespace osu.Game.Rulesets.Osu.Mods
             Value = true
         };
 
+        [SettingSource("Follow points", "Enables follow points")]
+        public BindableBool FollowPoints { get; } = new BindableBool(true);
+
         public override float DefaultFlashlightSize => 180;
 
         private OsuFlashlight flashlight = null!;
 
         protected override Flashlight CreateFlashlight() => flashlight = new OsuFlashlight(this);
+
+        public override void ApplyToDrawableRuleset(DrawableRuleset<OsuHitObject> drawableRuleset)
+        {
+            base.ApplyToDrawableRuleset(drawableRuleset);
+
+            if (!FollowPoints.Value)
+                (drawableRuleset.Playfield as OsuPlayfield)?.FollowPoints.Hide();
+        }
 
         public void ApplyToDrawableHitObject(DrawableHitObject drawable)
         {
