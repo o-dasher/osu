@@ -44,9 +44,9 @@ namespace osu.Game.Rulesets.Osu.Tests
         [Test]
         public void TestTouchInput()
         {
-            AddStep("Touch", () => touch(OsuDrawableTouchInputHandler.CURSOR_TOUCH));
+            AddStep("Touch", () => touch(OsuDrawableTouchInputHandler.DEFAULT_CURSOR_TOUCH));
 
-            AddAssert("Pressed", () => osuInputManager.CurrentState.Touch.IsActive(OsuDrawableTouchInputHandler.CURSOR_TOUCH));
+            AddAssert("Pressed", () => osuInputManager.CurrentState.Touch.IsActive(OsuDrawableTouchInputHandler.DEFAULT_CURSOR_TOUCH));
 
             AddStep("Touch with other finger", () => touch(TouchSource.Touch2));
 

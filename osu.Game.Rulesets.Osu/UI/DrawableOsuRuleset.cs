@@ -40,7 +40,7 @@ namespace osu.Game.Rulesets.Osu.UI
         [BackgroundDependencyLoader]
         private void load()
         {
-            KeyBindingInputManager.Add(TouchInputHandler = new OsuDrawableTouchInputHandler((OsuInputManager)KeyBindingInputManager) { RelativeSizeAxes = Axes.Both });
+            KeyBindingInputManager.Add(TouchInputHandler = new OsuDrawableTouchInputHandler(this) { RelativeSizeAxes = Axes.Both });
         }
 
         public override DrawableHitObject<OsuHitObject> CreateDrawableRepresentation(OsuHitObject h) => null;
