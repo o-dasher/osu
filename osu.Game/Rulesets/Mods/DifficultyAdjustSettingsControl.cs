@@ -59,6 +59,8 @@ namespace osu.Game.Rulesets.Mods
             Current.BindValueChanged(_ => updateCurrentFromSlider());
             beatmap.BindValueChanged(_ => updateCurrentFromSlider(), true);
 
+            difficultyBindable.Beatmap.BindTo(beatmap);
+
             sliderDisplayCurrent.BindValueChanged(number =>
             {
                 // this handles the transfer of the slider value to the main bindable.

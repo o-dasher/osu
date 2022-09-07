@@ -53,6 +53,9 @@ namespace osu.Game.Rulesets.Mods
             ReadCurrentFromDifficulty = diff => diff.OverallDifficulty,
         };
 
+        [SettingSource("Relative adjust", "Change the difficulty relative to the current difficulty")]
+        public BindableBool RelativeDifficulty { get; } = new BindableBool();
+
         [SettingSource("Extended Limits", "Adjust difficulty beyond sane limits.")]
         public BindableBool ExtendedLimits { get; } = new BindableBool();
 
@@ -61,7 +64,10 @@ namespace osu.Game.Rulesets.Mods
             foreach (var (_, property) in this.GetOrderedSettingsSourceProperties())
             {
                 if (property.GetValue(this) is DifficultyBindable diffAdjustBindable)
+                {
                     diffAdjustBindable.ExtendedLimits.BindTo(ExtendedLimits);
+                    diffAdjustBindable.RelativeDifficulty.BindTo(RelativeDifficulty);
+                }
             }
         }
 

@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Diagnostics;
 using osu.Framework.Bindables;
 using osu.Game.Beatmaps;
 
@@ -9,6 +10,8 @@ namespace osu.Game.Rulesets.Mods
 {
     public class DifficultyBindable : Bindable<float?>
     {
+        public readonly IBindable<WorkingBeatmap> Beatmap = new Bindable<WorkingBeatmap>();
+
         /// <summary>
         /// Whether the extended limits should be applied to this bindable.
         /// </summary>
@@ -29,14 +32,25 @@ namespace osu.Game.Rulesets.Mods
         /// </summary>
         public Func<IBeatmapDifficultyInfo, float>? ReadCurrentFromDifficulty;
 
+        public readonly BindableBool RelativeDifficulty = new BindableBool();
+
         public float Precision
         {
             set => CurrentNumber.Precision = value;
         }
 
+        private float minValue;
+
         public float MinValue
         {
-            set => CurrentNumber.MinValue = value;
+            set
+            {
+                if (value == minValue)
+                    return;
+
+                minValue = value;
+                updateMinValue();
+            }
         }
 
         private float maxValue;
@@ -75,11 +89,34 @@ namespace osu.Game.Rulesets.Mods
         {
         }
 
+        private void updateMinMaxValues()
+        {
+            updateMinValue();
+            updateMaxValue();
+        }
+
         public DifficultyBindable(float? defaultValue = null)
             : base(defaultValue)
         {
-            ExtendedLimits.BindValueChanged(_ => updateMaxValue());
+            ExtendedLimits.BindValueChanged(_ => updateMinMaxValues());
+            RelativeDifficulty.BindValueChanged(_ => updateMinMaxValues());
+            Beatmap.BindValueChanged(_ =>
+            {
+                if (RelativeDifficulty.Value)
+                    updateMinMaxValues();
+            });
         }
+
+        private float currentBeatmapDifficulty
+        {
+            get
+            {
+                Debug.Assert(ReadCurrentFromDifficulty != null);
+                return ReadCurrentFromDifficulty(Beatmap.Value.Beatmap.BeatmapInfo.Difficulty);
+            }
+        }
+
+        private bool isRelative => ReadCurrentFromDifficulty != null && RelativeDifficulty.Value && Beatmap.Value != null;
 
         public override float? Value
         {
@@ -90,13 +127,31 @@ namespace osu.Game.Rulesets.Mods
                 if (value != null)
                     CurrentNumber.MaxValue = MathF.Max(CurrentNumber.MaxValue, value.Value);
 
-                base.Value = value;
+                base.Value = isRelative ? currentBeatmapDifficulty + value : value;
+            }
+        }
+
+        private float getAppliedMaxValue() => ExtendedLimits.Value && extendedMaxValue != null ? extendedMaxValue.Value : maxValue;
+
+        private float getRelativeMaxValue(float appliedMaxValue) => appliedMaxValue - currentBeatmapDifficulty;
+
+        private void updateMinValue()
+        {
+            if (isRelative)
+            {
+                float appliedMaxValue = getAppliedMaxValue();
+                CurrentNumber.MinValue = getRelativeMaxValue(appliedMaxValue) - appliedMaxValue;
+            }
+            else
+            {
+                CurrentNumber.MinValue = minValue;
             }
         }
 
         private void updateMaxValue()
         {
-            CurrentNumber.MaxValue = ExtendedLimits.Value && extendedMaxValue != null ? extendedMaxValue.Value : maxValue;
+            float appliedMaxValue = getAppliedMaxValue();
+            CurrentNumber.MaxValue = isRelative ? getRelativeMaxValue(appliedMaxValue) : appliedMaxValue;
         }
 
         public override void BindTo(Bindable<float?> them)
@@ -111,6 +166,9 @@ namespace osu.Game.Rulesets.Mods
             ExtendedMaxValue = otherDifficultyBindable.extendedMaxValue;
 
             ExtendedLimits.BindTarget = otherDifficultyBindable.ExtendedLimits;
+            RelativeDifficulty.BindTarget = otherDifficultyBindable.RelativeDifficulty;
+
+            Beatmap.BindTarget = otherDifficultyBindable.Beatmap;
 
             // the actual values need to be copied after the max value constraints.
             CurrentNumber.BindTarget = otherDifficultyBindable.CurrentNumber;
@@ -126,6 +184,8 @@ namespace osu.Game.Rulesets.Mods
 
             CurrentNumber.UnbindFrom(otherDifficultyBindable.CurrentNumber);
             ExtendedLimits.UnbindFrom(otherDifficultyBindable.ExtendedLimits);
+            RelativeDifficulty.UnbindFrom(otherDifficultyBindable.RelativeDifficulty);
+            Beatmap.UnbindFrom(otherDifficultyBindable.Beatmap);
         }
 
         protected override Bindable<float?> CreateInstance() => new DifficultyBindable();
