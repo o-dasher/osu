@@ -53,7 +53,7 @@ namespace osu.Game.Rulesets.Mods
             ReadCurrentFromDifficulty = diff => diff.OverallDifficulty,
         };
 
-        [SettingSource("Relative adjust", "Change the difficulty relative to the current difficulty")]
+        [SettingSource("Relative adjust", "Adjust the difficulty relative to the difficulty of the beatmap.")]
         public BindableBool RelativeDifficulty { get; } = new BindableBool();
 
         [SettingSource("Extended Limits", "Adjust difficulty beyond sane limits.")]
@@ -98,8 +98,8 @@ namespace osu.Game.Rulesets.Mods
         /// <param name="difficulty">The beatmap to have settings applied.</param>
         protected virtual void ApplySettings(BeatmapDifficulty difficulty)
         {
-            if (DrainRate.Value != null) difficulty.DrainRate = DrainRate.Value.Value;
-            if (OverallDifficulty.Value != null) difficulty.OverallDifficulty = OverallDifficulty.Value.Value;
+            if (DrainRate.Value != null) difficulty.DrainRate = DrainRate.AppliedDifficulty;
+            if (OverallDifficulty.Value != null) difficulty.OverallDifficulty = OverallDifficulty.AppliedDifficulty;
         }
     }
 }

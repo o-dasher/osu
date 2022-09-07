@@ -21,11 +21,13 @@ namespace osu.Game.Rulesets.Mods
         /// An internal numeric bindable to hold and propagate min/max/precision.
         /// The value of this bindable should not be set.
         /// </summary>
-        internal readonly BindableFloat CurrentNumber = new BindableFloat
+        internal readonly BindableFloat DisplayNumber = new BindableFloat
         {
             MinValue = 0,
             MaxValue = 10,
         };
+
+        public float AppliedDifficulty;
 
         /// <summary>
         /// A function that can extract the current value of this setting from a beatmap difficulty for display purposes.
@@ -36,7 +38,7 @@ namespace osu.Game.Rulesets.Mods
 
         public float Precision
         {
-            set => CurrentNumber.Precision = value;
+            set => DisplayNumber.Precision = value;
         }
 
         private float minValue;
@@ -123,11 +125,15 @@ namespace osu.Game.Rulesets.Mods
             get => base.Value;
             set
             {
-                // Ensure that in the case serialisation runs in the wrong order (and limit extensions aren't applied yet) the deserialised value is still propagated.
                 if (value != null)
-                    CurrentNumber.MaxValue = MathF.Max(CurrentNumber.MaxValue, value.Value);
+                {
+                    // Ensure that in the case serialisation runs in the wrong order (and limit extensions aren't applied yet) the deserialised value is still propagated.
+                    DisplayNumber.MaxValue = MathF.Max(DisplayNumber.MaxValue, value.Value);
 
-                base.Value = isRelative ? currentBeatmapDifficulty + value : value;
+                    AppliedDifficulty = isRelative ? currentBeatmapDifficulty + value.Value : value.Value;
+                }
+
+                base.Value = value;
             }
         }
 
@@ -140,18 +146,18 @@ namespace osu.Game.Rulesets.Mods
             if (isRelative)
             {
                 float appliedMaxValue = getAppliedMaxValue();
-                CurrentNumber.MinValue = getRelativeMaxValue(appliedMaxValue) - appliedMaxValue;
+                DisplayNumber.MinValue = getRelativeMaxValue(appliedMaxValue) - appliedMaxValue;
             }
             else
             {
-                CurrentNumber.MinValue = minValue;
+                DisplayNumber.MinValue = minValue;
             }
         }
 
         private void updateMaxValue()
         {
             float appliedMaxValue = getAppliedMaxValue();
-            CurrentNumber.MaxValue = isRelative ? getRelativeMaxValue(appliedMaxValue) : appliedMaxValue;
+            DisplayNumber.MaxValue = isRelative ? getRelativeMaxValue(appliedMaxValue) : appliedMaxValue;
         }
 
         public override void BindTo(Bindable<float?> them)
@@ -171,7 +177,7 @@ namespace osu.Game.Rulesets.Mods
             Beatmap.BindTarget = otherDifficultyBindable.Beatmap;
 
             // the actual values need to be copied after the max value constraints.
-            CurrentNumber.BindTarget = otherDifficultyBindable.CurrentNumber;
+            DisplayNumber.BindTarget = otherDifficultyBindable.DisplayNumber;
             base.BindTo(them);
         }
 
@@ -182,7 +188,7 @@ namespace osu.Game.Rulesets.Mods
 
             base.UnbindFrom(them);
 
-            CurrentNumber.UnbindFrom(otherDifficultyBindable.CurrentNumber);
+            DisplayNumber.UnbindFrom(otherDifficultyBindable.DisplayNumber);
             ExtendedLimits.UnbindFrom(otherDifficultyBindable.ExtendedLimits);
             RelativeDifficulty.UnbindFrom(otherDifficultyBindable.RelativeDifficulty);
             Beatmap.UnbindFrom(otherDifficultyBindable.Beatmap);

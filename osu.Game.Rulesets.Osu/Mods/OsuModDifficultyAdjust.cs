@@ -50,8 +50,8 @@ namespace osu.Game.Rulesets.Osu.Mods
         {
             base.ApplySettings(difficulty);
 
-            if (CircleSize.Value != null) difficulty.CircleSize = CircleSize.Value.Value;
-            if (ApproachRate.Value != null) difficulty.ApproachRate = ApproachRate.Value.Value;
+            if (CircleSize.Value != null) difficulty.CircleSize = CircleSize.AppliedDifficulty;
+            if (ApproachRate.Value != null) difficulty.ApproachRate = ApproachRate.AppliedDifficulty;
         }
     }
 }
