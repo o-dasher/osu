@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
@@ -106,6 +107,8 @@ namespace osu.Game.Rulesets.Mods
             private readonly float sizeMultiplier;
             private readonly bool comboBasedSize;
 
+            protected float FinalSizeMultiplier = 1;
+
             protected Flashlight(ModFlashlight modFlashlight)
             {
                 defaultFlashlightSize = modFlashlight.DefaultFlashlightSize;
@@ -119,6 +122,12 @@ namespace osu.Game.Rulesets.Mods
                 shader = shaderManager.Load("PositionAndColour", FragmentShader);
             }
 
+            protected virtual void ApplyFadeSequence(BreakPeriod breakPeriod)
+            {
+                this.Delay(breakPeriod.StartTime + FLASHLIGHT_FADE_DURATION).FadeOutFromOne(FLASHLIGHT_FADE_DURATION);
+                this.Delay(breakPeriod.EndTime - FLASHLIGHT_FADE_DURATION).FadeInFromZero(FLASHLIGHT_FADE_DURATION);
+            }
+
             protected override void LoadComplete()
             {
                 base.LoadComplete();
@@ -127,16 +136,8 @@ namespace osu.Game.Rulesets.Mods
 
                 using (BeginAbsoluteSequence(0))
                 {
-                    foreach (var breakPeriod in Breaks)
-                    {
-                        if (!breakPeriod.HasEffect)
-                            continue;
-
-                        if (breakPeriod.Duration < FLASHLIGHT_FADE_DURATION * 2) continue;
-
-                        this.Delay(breakPeriod.StartTime + FLASHLIGHT_FADE_DURATION).FadeOutFromOne(FLASHLIGHT_FADE_DURATION);
-                        this.Delay(breakPeriod.EndTime - FLASHLIGHT_FADE_DURATION).FadeInFromZero(FLASHLIGHT_FADE_DURATION);
-                    }
+                    foreach (var breakPeriod in Breaks.Where(breakPeriod => breakPeriod.HasEffect && breakPeriod.Duration >= FLASHLIGHT_FADE_DURATION * 2))
+                        ApplyFadeSequence(breakPeriod);
                 }
             }
 
@@ -146,7 +147,7 @@ namespace osu.Game.Rulesets.Mods
 
             protected float GetSizeFor(int combo)
             {
-                float size = defaultFlashlightSize * sizeMultiplier;
+                float size = defaultFlashlightSize * sizeMultiplier * FinalSizeMultiplier;
                 return comboBasedSize ? size * 1 - MathF.Floor(MathF.Min(combo, 200) / 1000) : size;
             }
 
