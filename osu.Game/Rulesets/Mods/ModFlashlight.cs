@@ -147,16 +147,7 @@ namespace osu.Game.Rulesets.Mods
             protected float GetSizeFor(int combo)
             {
                 float size = defaultFlashlightSize * sizeMultiplier;
-
-                if (comboBasedSize)
-                {
-                    if (combo > 200)
-                        size *= 0.8f;
-                    else if (combo > 100)
-                        size *= 0.9f;
-                }
-
-                return size;
+                return comboBasedSize ? size * 1 - MathF.Floor(MathF.Min(combo, 200) / 1000) : size;
             }
 
             private Vector2 flashlightPosition;
