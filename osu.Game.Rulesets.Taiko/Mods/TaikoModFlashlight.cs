@@ -66,10 +66,7 @@ namespace osu.Game.Rulesets.Taiko.Mods
                 return new Vector2(0, GetSizeFor(combo) * taikoPlayfield.DrawHeight / TaikoPlayfield.DEFAULT_HEIGHT);
             }
 
-            protected override void OnComboChange(ValueChangedEvent<int> e)
-            {
-                this.TransformTo(nameof(FlashlightSize), getSizeFor(e.NewValue), FLASHLIGHT_FADE_DURATION);
-            }
+            protected override void ApplyTransform(int combo) => this.TransformTo(nameof(FlashlightSize), getSizeFor(combo), FLASHLIGHT_FADE_DURATION);
 
             protected override string FragmentShader => "CircularFlashlight";
 

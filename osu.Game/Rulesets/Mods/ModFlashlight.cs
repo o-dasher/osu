@@ -132,7 +132,7 @@ namespace osu.Game.Rulesets.Mods
             {
                 base.LoadComplete();
 
-                Combo.ValueChanged += OnComboChange;
+                Combo.ValueChanged += e => ApplyTransform(e.NewValue);
 
                 using (BeginAbsoluteSequence(0))
                 {
@@ -141,7 +141,7 @@ namespace osu.Game.Rulesets.Mods
                 }
             }
 
-            protected abstract void OnComboChange(ValueChangedEvent<int> e);
+            protected abstract void ApplyTransform(int combo);
 
             protected abstract string FragmentShader { get; }
 

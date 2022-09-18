@@ -63,10 +63,7 @@ namespace osu.Game.Rulesets.Mania.Mods
                 }
             }
 
-            protected override void OnComboChange(ValueChangedEvent<int> e)
-            {
-                this.TransformTo(nameof(FlashlightSize), new Vector2(DrawWidth, GetSizeFor(e.NewValue)), FLASHLIGHT_FADE_DURATION);
-            }
+            protected override void ApplyTransform(int combo) => this.TransformTo(nameof(FlashlightSize), new Vector2(DrawWidth, GetSizeFor(combo)), FLASHLIGHT_FADE_DURATION);
 
             protected override string FragmentShader => "RectangularFlashlight";
         }
