@@ -350,7 +350,7 @@ namespace osu.Game.Tests.Rulesets.Scoring
                 }
             };
 
-            double totalScore = new TestScoreProcessor().ComputeScore(ScoringMode.Standardised, testScore);
+            long totalScore = new TestScoreProcessor().ComputeScore(ScoringMode.Standardised, testScore);
             Assert.That(totalScore, Is.EqualTo(750_000)); // 500K from accuracy (100%), and 250K from combo (50%).
         }
 #pragma warning restore CS0618
